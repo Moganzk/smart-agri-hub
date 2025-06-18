@@ -1,0 +1,10 @@
+body {
+  background: linear-gradient(135deg, #e0ffe0 0%, #f0fff0 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+input, button {
+  font-family: inherit;
+}

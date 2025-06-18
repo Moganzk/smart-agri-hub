@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+node_modules/
+.vscode/
+build/
+.dart_tool/
+.idea/
+".venv/" 
