@@ -21,9 +21,7 @@ def get_local_response(query):
     return None
 
 def chatbot_response(user_input):
-    # Try local knowledge base first
     local_reply = get_local_response(user_input)
     if local_reply:
-        return local_reply
-    # Fallback: generic response
-    return "Sorry, I don't have an answer for that yet."
+        return f"AgriBot 🌱: {local_reply} {random.choice(['🌾', '✌️', '🚜', '🌻'])}"
+    return "AgriBot 🌱: Sorry, I don't have an answer for that yet. 🤔"
