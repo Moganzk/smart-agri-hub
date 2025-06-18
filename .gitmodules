@@ -1,0 +1,3 @@
+[submodule "ai-models/chatbot"]
+	path = ai-models/chatbot
+	url = https://github.com/Moganzk/Chatbot.git
