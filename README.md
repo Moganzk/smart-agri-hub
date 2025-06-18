@@ -55,3 +55,4 @@ Copy `.env.example` to `.env` and fill your secrets.
 
 ## 📄 License
 MIT
+"# UI polish" 
