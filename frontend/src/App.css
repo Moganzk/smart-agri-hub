@@ -142,15 +142,22 @@ nav a:hover, nav a.active {
   }
 }
 
-body.dark {
-  background: #181818;
-  color: #e0e0e0;
+body.light {
+  background: #fff;
+  color: #222;
 }
+
+body.dark {
+  background: #181c1f;
+  color: #f1f1f1;
+}
+
 .profile-container.dark, .auth-container.dark {
   background: #232323;
   color: #e0e0e0;
   box-shadow: 0 4px 24px rgba(0,0,0,0.25);
 }
+
 body.dark nav {
   background: transparent;
 }

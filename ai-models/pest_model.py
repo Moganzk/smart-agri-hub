@@ -1,10 +1,6 @@
 # Example: Simple pest risk predictor based on temperature and humidity
 
 def predict_pest_risk(temperature: float, humidity: float) -> str:
-    """
-    Predicts pest risk level based on temperature and humidity.
-    Returns: 'Low', 'Medium', or 'High'
-    """
     if temperature > 30 and humidity > 70:
         return "High"
     elif temperature > 25 and humidity > 60:

@@ -366,4 +366,4 @@ def format_prices(prices):
 # =====================
 if __name__ == '__main__':
     print("Loaded CROQ_API_KEY:", os.getenv('CROQ_API_KEY'))
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

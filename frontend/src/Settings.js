@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { useTheme } from "./ThemeContext";
 
 function Settings() {
-  // Example settings state
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const { theme, setTheme } = useTheme(); // <-- add setTheme here
   const [notifications, setNotifications] = useState(
     localStorage.getItem("notifications") === "true"
   );
@@ -12,8 +12,7 @@ function Settings() {
   // Handle theme change
   const handleThemeChange = (e) => {
     setTheme(e.target.value);
-    localStorage.setItem("theme", e.target.value);
-    setMessage("Theme updated!");
+    // No need for localStorage here, it's handled in ThemeProvider
   };
 
   // Handle notifications toggle
@@ -35,10 +34,8 @@ function Settings() {
     setPassword("");
   };
 
-  // Removed duplicate theme declaration to avoid redeclaration error
-
   return (
-    <div className="profile-container">
+    <div className={`profile-container${theme === "dark" ? " dark" : ""}`}>
       <h2>Settings</h2>
 
       <div style={{ width: "100%", marginBottom: "1.5rem" }}>

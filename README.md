@@ -64,9 +64,20 @@ See `/backend`, `/frontend`, and `/ai-models`.
 ## 🔐 Env Setup
 Copy `.env.example` to `.env` and fill your secrets.
 
+
+# Run database migrations
+alembic upgrade head
+
+# Run the app
+uvicorn app.main:app --reload
+
+
 ## 🙌 Contributors
+- 🙍‍♀️Eacha Atieno - owner
 - 👨‍🌾 Samuel Mogaka Nyamwange — Project Lead
+
 
 ## 📄 License
 MIT
 "# UI polish" 
+

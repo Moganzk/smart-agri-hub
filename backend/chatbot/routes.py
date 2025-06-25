@@ -10,9 +10,8 @@ chatbot_bp = Blueprint('chatbot', __name__)
 def chat():
     data = request.get_json()
     user_input = data.get("message", "")
-
     try:
         reply = chatbot_response(user_input)
-        return jsonify({"reply": reply})
+        return jsonify({"response": reply})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

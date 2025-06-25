@@ -1,53 +1,49 @@
 from flask import Flask
-from dotenv import load_dotenv
-import os
 from flask_cors import CORS
-
-load_dotenv()
 
 from chatbot.routes import chatbot_bp
 from pest.routes import pest_bp
 from weather.routes import weather_bp
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000"]}})
 
+# Register blueprints
 app.register_blueprint(chatbot_bp)
-app.register_blueprint(pest_bp)
-app.register_blueprint(weather_bp)
+app.register_blueprint(pest_bp, url_prefix="/predict")
+app.register_blueprint(weather_bp, url_prefix="/predict")
 
-@app.route('/')
-def home():
+
+@app.route("/")
+def index():
     return """
     <html>
       <head>
-        <title>Smart Agri Hub Backend</title>
+        <title>Smart Agri Hub API</title>
         <style>
           body {
-            background: #181818;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #181c1f;
+            color: #fff;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            font-family: 'Inter', Arial, sans-serif;
           }
           h1 {
-            color: #90caf9;
-          }
-          p {
-            color: #bdbdbd;
+            text-align: center;
+            font-size: 2.2rem;
+            color: #00ffe1;
           }
         </style>
       </head>
       <body>
-        <h1>🌱 Smart Agri Hub Backend</h1>
-        <p>API is running. Welcome!</p>
+        <h1>Smart Agri Hub API is running!</h1>
       </body>
     </html>
     """
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

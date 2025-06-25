@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import FullWindowChat from "./FullWindowChat";
 import Agribot from "./Agribot"; // If you want to use the inline chat as a separate component
+import { useTheme } from "./ThemeContext";
 
 function Dashboard() {
+  const { theme, setTheme, toggleTheme } = useTheme();
+
   // Chatbot state
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
@@ -28,18 +31,19 @@ function Dashboard() {
   const [city, setCity] = useState("Nairobi");
   const [currentWeather, setCurrentWeather] = useState(null);
 
+  // Farming news state
+  const [news, setNews] = useState([]);
+
   // Handler for sending a message (shared)
   const sendChatMessage = async (msg) => {
     setChatHistory((prev) => [...prev, { sender: "user", text: msg }]);
     setBotTyping(true);
 
-    const formData = new FormData();
-    formData.append("msg", msg);
-
     try {
-      const res = await fetch("http://localhost:8000/get", {
+      const res = await fetch("http://localhost:5000/chat", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }), // <-- use msg here!
       });
       const data = await res.json();
       setChatHistory((prev) => [
@@ -59,26 +63,34 @@ function Dashboard() {
   const handlePest = async (e) => {
     e.preventDefault();
     setPestResult("Loading...");
-    const res = await fetch("/predict/pest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ temperature: pestTemp, humidity: pestHum }),
-    });
-    const data = await res.json();
-    setPestResult(data.risk || data.error);
+    try {
+      const res = await fetch("http://localhost:5000/predict/pest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ temperature: pestTemp, humidity: pestHum }),
+      });
+      const data = await res.json();
+      setPestResult(data.risk || data.error || "Sorry, could not get prediction.");
+    } catch {
+      setPestResult("Sorry, could not get prediction.");
+    }
   };
 
   // Weather prediction handler
   const handleWeather = async (e) => {
     e.preventDefault();
     setWeatherResult("Loading...");
-    const res = await fetch("/predict/weather", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ temperature: weatherTemp, humidity: weatherHum }),
-    });
-    const data = await res.json();
-    setWeatherResult(data.condition || data.error);
+    try {
+      const res = await fetch("http://localhost:5000/predict/weather", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ temperature: weatherTemp, humidity: weatherHum }),
+      });
+      const data = await res.json();
+      setWeatherResult(data.condition || data.error || "Sorry, could not get prediction.");
+    } catch {
+      setWeatherResult("Sorry, could not get prediction.");
+    }
   };
 
   // Image change handler
@@ -100,6 +112,25 @@ function Dashboard() {
     fetchWeather();
   }, [city]);
 
+  // Fetch farming news
+  useEffect(() => {
+    const rssUrl = "https://farmersreviewafrica.com/category/crops/feed/";
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+    setNews([]);
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        console.log("News API response:", data);
+        if (data.status === "ok" && data.items) {
+          setNews(data.items);
+        } else {
+          setNews(null);
+        }
+      })
+      .catch(() => setNews(null));
+  }, []);
+
   // New function to handle chat form submission
   const handleChat = (e) => {
     e.preventDefault();
@@ -108,8 +139,6 @@ function Dashboard() {
       setChatInput("");
     }
   };
-
-  const theme = localStorage.getItem("theme") || "light";
 
   return (
     <div>
@@ -228,7 +257,7 @@ function Dashboard() {
             />
             <button type="submit" style={buttonStyle}>Predict</button>
           </form>
-          {pestResult && <div style={resultStyle}>{pestResult}</div>}
+          {pestResult && <div>{pestResult}</div>}
         </section>
 
         {/* Weather Prediction Card */}
@@ -251,7 +280,7 @@ function Dashboard() {
             />
             <button type="submit" style={buttonStyle}>Predict</button>
           </form>
-          {weatherResult && <div style={resultStyle}>{weatherResult}</div>}
+          {weatherResult && <div>{weatherResult}</div>}
         </section>
 
         {/* Image Diagnosis Card (future) */}
@@ -287,13 +316,112 @@ function Dashboard() {
               style={inputStyle}
             />
             {currentWeather && currentWeather.main && (
-              <div style={{ marginTop: 8, color: "#1b5e20" }}>
-                <strong>Current:</strong> {currentWeather.weather[0].description}, {currentWeather.main.temp}°C
+              <div style={{
+                marginTop: 8,
+                color: "#1b5e20",
+                background: "#e8f5e9",
+                borderRadius: 8,
+                padding: "0.7rem",
+                fontWeight: 500,
+                textAlign: "center"
+              }}>
+                <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
+                  Current Weather in {city}
+                </div>
+                <div>
+                  <span role="img" aria-label="thermometer">🌡️</span>
+                  <strong> Temperature:</strong> {currentWeather.main.temp}°C
+                </div>
+                <div>
+                  <span role="img" aria-label="humidity">💧</span>
+                  <strong> Humidity:</strong> {currentWeather.main.humidity}%
+                </div>
+                <div>
+                  <span role="img" aria-label="weather">🌤️</span>
+                  <strong> Condition:</strong> {currentWeather.weather[0].description}
+                </div>
               </div>
             )}
           </div>
         </section>
       </main>
+
+      {/* Farming News Section */}
+      <section style={{
+        margin: "2rem auto",
+        maxWidth: 900,
+        background: "#f9fbe7",
+        borderRadius: 12,
+        padding: "1.5rem",
+        boxShadow: "0 2px 8px rgba(60,120,60,0.08)"
+      }}>
+        <h2 style={{ color: "#388e3c", marginBottom: 16 }}>📰 News From Farmers</h2>
+        {news === null && (
+          <div style={{ color: "#c00" }}>
+            Failed to load news. Please try again later.
+            <button
+              style={{ marginLeft: 12, background: "#388e3c", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 1rem", cursor: "pointer" }}
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {news && news.length === 0 && <div>Loading news...</div>}
+        {news && news.length > 0 && (
+          <ul style={{ paddingLeft: 0, listStyle: "none" }}>
+            {news.slice(0, 5).map(item => (
+              <li
+                key={item.guid || item.link}
+                style={{
+                  marginBottom: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 8,
+                  background: "#fff",
+                  borderRadius: 8,
+                  boxShadow: "0 1px 4px rgba(60,120,60,0.06)",
+                  padding: 12,
+                }}
+              >
+                {item.thumbnail && (
+                  <img
+                    src={item.thumbnail}
+                    alt="news thumbnail"
+                    style={{
+                      width: 180,
+                      height: 120,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      background: "#eee",
+                      marginBottom: 8,
+                      alignSelf: "center",
+                    }}
+                  />
+                )}
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#388e3c",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    fontSize: 18,
+                    marginBottom: 4,
+                  }}
+                >
+                  {item.title}
+                </a>
+                <div style={{ color: "#666", fontSize: 14 }}>
+                  {item.pubDate && new Date(item.pubDate).toLocaleDateString()}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Full window chat button */}
       <button
