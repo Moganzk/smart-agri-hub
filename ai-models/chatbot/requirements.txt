@@ -3,4 +3,16 @@ python-dotenv
 flask-cors
 requests
 gunicorn
+pygame
+requests
+gTTS
+PyPDF2
+pytemperature
+openai
+pillow
 googletrans==4.0.0-rc1
+httpx==0.13.3
+python-docx
+python-pptx
+SpeechRecognition
+pytesseract

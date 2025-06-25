@@ -38,7 +38,7 @@ Now powered by **Llama 3 70B** via Groq's ultra-fast API!
    ```bash
    python app.py
    ```
-2. Open [http://localhost:5000](http://localhost:5000) in your browser.
+2. Open [http://localhost:8000](http://localhost:8000) in your browser.
 3. Chat, upload files, or drag & drop images, docs, or audio!
 
 ---

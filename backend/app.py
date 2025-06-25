@@ -1,6 +1,7 @@
 from flask import Flask
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -9,6 +10,7 @@ from pest.routes import pest_bp
 from weather.routes import weather_bp
 
 app = Flask(__name__)
+CORS(app)
 
 app.register_blueprint(chatbot_bp)
 app.register_blueprint(pest_bp)

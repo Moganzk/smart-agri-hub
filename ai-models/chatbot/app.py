@@ -1,12 +1,13 @@
+import os
+os.environ['SDL_AUDIODRIVER'] = 'dummy'  # Disable audio for server environments
+
 from flask import Flask, render_template, request, jsonify, session, send_file
 from flask_cors import CORS
 import requests
-import os
 import json
 import random
 from dotenv import load_dotenv
 from datetime import timedelta, datetime
-from googletrans import Translator
 import speech_recognition as sr
 from gtts import gTTS
 import pygame
@@ -48,9 +49,12 @@ with open('market_prices.json') as f:  # New: Crop prices
 # =====================
 # SERVICE INITIALIZATION
 # =====================
-translator = Translator()
+
 recognizer = sr.Recognizer()
-pygame.mixer.init()
+try:
+    pygame.mixer.init()
+except Exception as e:
+    print("Audio init failed (likely no audio device on server):", e)
 
 # =====================
 # CORE FUNCTIONALITIES
@@ -137,10 +141,7 @@ def process_voice(audio_file):
 
 # 7. TRANSLATION SYSTEM
 def translate_text(text, target_lang='en'):
-    try:
-        return translator.translate(text, dest=target_lang).text
-    except:
-        return text
+    return text
 
 # 8. TEXT-TO-SPEECH
 def text_to_speech(text, lang='en'):
@@ -188,6 +189,9 @@ def home():
 
 @app.route('/get', methods=['POST'])
 def chat():
+    print("Received POST /get request")
+    if 'conversation' not in session:
+        session['conversation'] = []
     start = time.time()
     user_input = request.form.get('msg', "").strip()
     # Collect all audio and document files
@@ -280,9 +284,9 @@ def chat():
 
     # Groq API call (handles open-ended conversation)
     try:
-        headers = {"Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}"}
+        headers = {"Authorization": f"Bearer {os.getenv('CROQ_API_KEY')}"}
         messages = [
-            {"role": "system", "content": f"You are Mogan, a helpful, witty assistant. Respond in {style} style."},
+            {"role": "system", "content": f"You are Agribot, a helpful, witty assistant. Respond in {style} style."},
             *session['conversation'][-16:],
             {"role": "user", "content": user_input}
         ]
@@ -296,6 +300,8 @@ def chat():
             },
             timeout=10
         )
+        print("Groq API status:", response.status_code)
+        print("Groq API response:", response.text)
         bot_reply = response.json()["choices"][0]["message"]["content"]
         session['conversation'].append({"role": "assistant", "content": bot_reply})
         return format_response(bot_reply, style, lang)
@@ -359,4 +365,5 @@ def format_prices(prices):
 # RUN APP
 # =====================
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("Loaded CROQ_API_KEY:", os.getenv('CROQ_API_KEY'))
+    app.run(host='0.0.0.0', port=8000, debug=True)

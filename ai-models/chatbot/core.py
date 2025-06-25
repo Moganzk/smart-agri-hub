@@ -2,6 +2,7 @@ import json
 import random
 import os
 import sys
+from flask_cors import CORS
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'ai-models', 'chatbot')))
 #from core import chatbot_response
 

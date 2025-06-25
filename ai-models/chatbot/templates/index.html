@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta property="og:url" content="not yet, i'll place it!, later" />
   <meta property="og:type" content="simple website app" />
-  <meta property="og:title" content="Mogan Chat" />
+  <meta property="og:title" content="Agribot Chat" />
   <meta property="og:description" content="A chatbot that can respond according to your needs. dumb!, 😅yeah, I know that" />
   <meta property="og:image" content="https://img.icons8.com/fluency/96/000000/bot.png"/>
   <meta property="og:image:width" content="635" />
   <meta property="og:image:height" content="635" />
-  <meta property="og:site_name" content="Mogan's Chatbot" />
+  <meta property="og:site_name" content="Eacha's Chatbot" />
   <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/000000/bot.png">
-  <title>Mogan Chatbot</title>
+  <title>Agribot Chatbot</title>
   <style>
     body {
       background: #181c1f;
@@ -186,7 +186,7 @@
 </head>
 <body>
   <div class="chat-container">
-    <h1>Talk to Mogan 🤖</h1>
+    <h1>Talk to Agribot 🤖</h1>
     <div class="chat-box" id="chat-box"></div>
     <div id="file-preview"></div>
     <div id="drop-area">Drag & drop files here</div>
@@ -311,19 +311,19 @@
       selectedAudioFiles.forEach((file, i) => formData.append("voice" + i, file));
       selectedDocFiles.forEach((file, i) => formData.append("document" + i, file));
 
-      fetch("https://chatbot-i34n.onrender.com/get", {
+      fetch("http://localhost:8000/get", {
         method: "POST",
         body: formData,
       })
         .then((response) => response.json())
         .then((data) => {
-          appendMessage("Mogan: " + data.response, 'bot');
+          appendMessage("Agribot: " + data.response, 'bot');
           if (data.audioUrl) {
             new Audio(data.audioUrl).play();
           }
         })
         .catch(() => {
-          appendMessage("Mogan: Sorry, I couldn't process your request.", 'bot');
+          appendMessage("Agribot: Sorry, I couldn't process your request.", 'bot');
         });
 
       input.value = '';
@@ -335,7 +335,7 @@
     }
 
     function sendFeedback(feedback, msg_id) {
-      fetch("https://chatbot-i34n.onrender.com/feedback", {
+      fetch("http://localhost:8000/feedback", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({feedback, msg_id})

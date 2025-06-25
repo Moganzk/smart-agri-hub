@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
+import FullWindowChat from "./FullWindowChat";
+import Agribot from "./Agribot"; // If you want to use the inline chat as a separate component
 
 function Dashboard() {
   // Chatbot state
   const [chatInput, setChatInput] = useState("");
-  const [chatReply, setChatReply] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [botTyping, setBotTyping] = useState(false);
-  const [isChatExpanded, setIsChatExpanded] = useState(false);
+  const [showFullChat, setShowFullChat] = useState(false);
+  const [isChatExpanded, setIsChatExpanded] = useState(false); // <-- Added state for chat expansion
 
   // Pest prediction state
   const [pestTemp, setPestTemp] = useState("");
@@ -26,28 +28,34 @@ function Dashboard() {
   const [city, setCity] = useState("Nairobi");
   const [currentWeather, setCurrentWeather] = useState(null);
 
-  // Handlers
-  const handleChat = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    setChatHistory((prev) => [...prev, { sender: "user", text: chatInput }]);
+  // Handler for sending a message (shared)
+  const sendChatMessage = async (msg) => {
+    setChatHistory((prev) => [...prev, { sender: "user", text: msg }]);
     setBotTyping(true);
-    setChatReply("");
-    const res = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: chatInput }),
-    });
-    const data = await res.json();
+
+    const formData = new FormData();
+    formData.append("msg", msg);
+
+    try {
+      const res = await fetch("http://localhost:8000/get", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      setChatHistory((prev) => [
+        ...prev,
+        { sender: "bot", text: data.response || "Sorry, I couldn't process your request." },
+      ]);
+    } catch {
+      setChatHistory((prev) => [
+        ...prev,
+        { sender: "bot", text: "Sorry, I couldn't process your request." },
+      ]);
+    }
     setBotTyping(false);
-    setChatReply(data.reply || data.error);
-    setChatHistory((prev) => [
-      ...prev,
-      { sender: "bot", text: data.reply || data.error },
-    ]);
-    setChatInput("");
   };
 
+  // Pest prediction handler
   const handlePest = async (e) => {
     e.preventDefault();
     setPestResult("Loading...");
@@ -60,6 +68,7 @@ function Dashboard() {
     setPestResult(data.risk || data.error);
   };
 
+  // Weather prediction handler
   const handleWeather = async (e) => {
     e.preventDefault();
     setWeatherResult("Loading...");
@@ -72,12 +81,14 @@ function Dashboard() {
     setWeatherResult(data.condition || data.error);
   };
 
+  // Image change handler
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
     setImagePreview(URL.createObjectURL(file));
   };
 
+  // Fetch weather data on city change
   useEffect(() => {
     const fetchWeather = async () => {
       const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
@@ -88,6 +99,15 @@ function Dashboard() {
     };
     fetchWeather();
   }, [city]);
+
+  // New function to handle chat form submission
+  const handleChat = (e) => {
+    e.preventDefault();
+    if (chatInput.trim()) {
+      sendChatMessage(chatInput);
+      setChatInput("");
+    }
+  };
 
   const theme = localStorage.getItem("theme") || "light";
 
@@ -274,6 +294,25 @@ function Dashboard() {
           </div>
         </section>
       </main>
+
+      {/* Full window chat button */}
+      <button
+        style={{ position: "fixed", bottom: 32, right: 32, zIndex: 1000, background: "#00ffe1", color: "#181c1f", border: "none", borderRadius: "50%", width: 60, height: 60, fontSize: 32, cursor: "pointer" }}
+        onClick={() => setShowFullChat(true)}
+        title="Open Agribot Full Window"
+      >
+        🤖
+      </button>
+
+      {/* Full window chat modal */}
+      {showFullChat && (
+        <FullWindowChat
+          onClose={() => setShowFullChat(false)}
+          chatHistory={chatHistory}
+          sendChatMessage={sendChatMessage}
+          botTyping={botTyping}
+        />
+      )}
     </div>
   );
 }

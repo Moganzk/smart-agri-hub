@@ -31,11 +31,25 @@ smart-agri-hub/
 └── LICENSE
 
 
+How to run the frontend
+cd frontend #from the project root
+npm start
+
+How to run the backend and the chatbot
+cd backend #from the project root
+python app.py
+
+How to run the chatbot
+cd ai-models\chatbot  #from the project root
+python app.py
+
+If the chatbot is bugging you just go a head and comment out the googletrans "google translator anywhere in your chatbot app.py, since it is not supported by python 3.13.x version"
+you know where to find the chatbot folder i guess
+
 An AI-powered agricultural system with:
 - 🤖 Chatbot for farming Q&A
 - 🌦️ Smart weather prediction
 - 🐛 Intelligent pest control system
-- 💬 WhatsApp support for farmers
 - 📊 Realtime analytics dashboard
 
 ## 🔧 Tech Stack
