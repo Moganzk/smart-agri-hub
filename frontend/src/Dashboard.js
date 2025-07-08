@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import FullWindowChat from "./FullWindowChat";
 import Agribot from "./Agribot"; // If you want to use the inline chat as a separate component
 import { useTheme } from "./ThemeContext";
 
-function Dashboard() {
+function Dashboard({ region }) {
   const { theme, setTheme, toggleTheme } = useTheme();
 
   // Chatbot state
@@ -33,6 +33,8 @@ function Dashboard() {
 
   // Farming news state
   const [news, setNews] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState(false);
 
   // Handler for sending a message (shared)
   const sendChatMessage = async (msg) => {
@@ -117,18 +119,25 @@ function Dashboard() {
     const rssUrl = "https://farmersreviewafrica.com/category/crops/feed/";
     const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
-    setNews([]);
+    setNewsLoading(true);
+    setNewsError(false);
     fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
-        console.log("News API response:", data);
-        if (data.status === "ok" && data.items) {
-          setNews(data.items);
-        } else {
-          setNews(null);
+        let filtered = [];
+        if (data.items) {
+          filtered = data.items.filter(item =>
+            item.title.toLowerCase().includes("thika") ||
+            item.description.toLowerCase().includes("thika")
+          );
         }
+        setNews(filtered.length > 0 ? filtered : data.items || []);
+        setNewsLoading(false);
       })
-      .catch(() => setNews(null));
+      .catch(() => {
+        setNewsError(true);
+        setNewsLoading(false);
+      });
   }, []);
 
   // New function to handle chat form submission
@@ -355,62 +364,28 @@ function Dashboard() {
         padding: "1.5rem",
         boxShadow: "0 2px 8px rgba(60,120,60,0.08)"
       }}>
-        <h2 style={{ color: "#388e3c", marginBottom: 16 }}>📰 News From Farmers</h2>
-        {news === null && (
-          <div style={{ color: "#c00" }}>
-            Failed to load news. Please try again later.
-            <button
-              style={{ marginLeft: 12, background: "#388e3c", color: "#fff", border: "none", borderRadius: 6, padding: "0.3rem 1rem", cursor: "pointer" }}
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </button>
-          </div>
+        <h2 style={{ color: "#388e3c", marginBottom: 16 }}>📰 News for Thika & Kenyan Farmers</h2>
+        {newsLoading && <div>Loading news...</div>}
+        {newsError && <div style={{ color: "#c00" }}>Failed to load news. Please try again later.</div>}
+        {news && news.length === 0 && !newsLoading && !newsError && (
+          <div>No recent news for Thika. Showing general Kenyan farming news.</div>
         )}
-        {news && news.length === 0 && <div>Loading news...</div>}
         {news && news.length > 0 && (
           <ul style={{ paddingLeft: 0, listStyle: "none" }}>
             {news.slice(0, 5).map(item => (
-              <li
-                key={item.guid || item.link}
-                style={{
-                  marginBottom: 24,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 8,
-                  background: "#fff",
-                  borderRadius: 8,
-                  boxShadow: "0 1px 4px rgba(60,120,60,0.06)",
-                  padding: 12,
-                }}
-              >
+              <li key={item.guid || item.link} style={{ marginBottom: 24, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, background: "#fff", borderRadius: 8, boxShadow: "0 1px 4px rgba(60,120,60,0.06)", padding: 12 }}>
                 {item.thumbnail && (
                   <img
                     src={item.thumbnail}
                     alt="news thumbnail"
-                    style={{
-                      width: 180,
-                      height: 120,
-                      objectFit: "cover",
-                      borderRadius: 8,
-                      background: "#eee",
-                      marginBottom: 8,
-                      alignSelf: "center",
-                    }}
+                    style={{ width: 180, height: 120, objectFit: "cover", borderRadius: 8, background: "#eee", marginBottom: 8, alignSelf: "center" }}
                   />
                 )}
                 <a
                   href={item.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    color: "#388e3c",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    fontSize: 18,
-                    marginBottom: 4,
-                  }}
+                  style={{ color: "#388e3c", fontWeight: 600, textDecoration: "none", fontSize: 18, marginBottom: 4 }}
                 >
                   {item.title}
                 </a>

@@ -71,10 +71,13 @@ alembic upgrade head
 # Run the app
 uvicorn app.main:app --reload
 
+# close the running program locally by 
+clicking on the open terminal and using ctrl + c to close the running sessions
+for the backend and frontend
+
 
 ## 🙌 Contributors
 - 🙍‍♀️Eacha Atieno - owner
-- 👨‍🌾 Samuel Mogaka Nyamwange — Project Lead
 
 
 ## 📄 License
